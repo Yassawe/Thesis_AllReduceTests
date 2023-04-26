@@ -20,34 +20,26 @@ def generateNumTensor(M, num):
 def runProcess(rank, args):
     torch.cuda.set_device(rank)
 
-    #data = generateRandomTensor(args.M, args.mean, args.std)
+    data = generateRandomTensor(args.M, args.mean, args.std)
 
-    data = generateNumTensor(args.M, rank)
+    #data = generateNumTensor(args.M, rank)
 
-    ###
-    
-    
     print("Device {}. Doing AllReduce...".format(rank))
     
     data = data.cuda()
 
+    profiler.start()
 
-    # profiler.start()
-
-    # for i in range(1000):
-    
-    dist.all_reduce(data, op=dist.ReduceOp.SUM)
+    for i in range(1000):
+        dist.all_reduce(data, op=dist.ReduceOp.SUM)
     
     dist.barrier()
-    # profiler.stop()
+    profiler.stop()
 
     print("Device {}. AllReduce done".format(rank))
-    ###
 
-    data = data.cpu()
-
-    
-    saveData(data, rank, args.name)
+    # data = data.cpu()
+    # saveData(data, rank, args.name)
 
 
 def init_process(rank, function, args):
@@ -55,9 +47,10 @@ def init_process(rank, function, args):
     os.environ["MASTER_PORT"] = "2950" 
 
     os.environ['NCCL_ALGO'] = 'Ring'
-    os.environ['NCCL_MAX_NCHANNELS'] = "1"
-    os.environ['NCCL_MIN_NCHANNELS'] = "1"
-    os.environ['NCCL_CHECKS_DISABLE'] = '1'
+    #os.environ['NCCL_PROTO'] = 'LL'
+    # os.environ['NCCL_MAX_NCHANNELS'] = "1"
+    # os.environ['NCCL_MIN_NCHANNELS'] = "1"
+    #os.environ['NCCL_CHECKS_DISABLE'] = '1'
 
     dist.init_process_group("nccl", rank=rank, world_size=args.gpus)
     function(rank, args)
