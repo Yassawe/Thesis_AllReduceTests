@@ -20,9 +20,9 @@ def generateNumTensor(M, num):
 def runProcess(rank, args):
     torch.cuda.set_device(rank)
 
-    data = generateRandomTensor(args.M, args.mean, args.std)
+    #data = generateRandomTensor(args.M, args.mean, args.std)
 
-    #data = generateNumTensor(args.M, rank)
+    data = generateNumTensor(args.M, rank)
 
     print("Device {}. Doing AllReduce...".format(rank))
     
@@ -38,8 +38,8 @@ def runProcess(rank, args):
 
     print("Device {}. AllReduce done".format(rank))
 
-    # data = data.cpu()
-    # saveData(data, rank, args.name)
+    data = data.cpu()
+    saveData(data, rank, args.name)
 
 
 def init_process(rank, function, args):
